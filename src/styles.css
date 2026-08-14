@@ -78,6 +78,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .lodging-grid article { border-top: 3px solid var(--ink); padding: 22px 6px; display: flex; gap: 14px; }
 .lodging-grid h3 { margin: 4px 0; font: 21px Georgia, serif; }
 .lodging-grid p { margin: 0; }
+.lodging-meta { display: grid; gap: 8px; margin: 16px 0 0; }
+.lodging-meta div { display: grid; grid-template-columns: 88px 1fr; gap: 8px; font-size: 13px; }
+.lodging-meta dt { color: #6b7d79; font-weight: 700; }
+.lodging-meta dd { margin: 0; font-weight: 700; }
 .filter-panel { background: var(--deep); color: white; padding: clamp(28px, 5vw, 55px); display: grid; grid-template-columns: 1fr 1.1fr; gap: 50px; align-items: end; box-shadow: 12px 12px 0 var(--sea); }
 .filter-panel h2 { font: 46px Georgia, serif; margin: 0 0 12px; }
 .filter-panel p:last-child { color: #d7e8e4; line-height: 1.6; }

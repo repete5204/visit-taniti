@@ -35,11 +35,30 @@ const restaurants = [
 ];
 
 const lodging = [
-  { icon: "🏨", name: "Four-star resort", detail: "Full-service stay near Yellow Leaf Bay" },
-  { icon: "🏡", name: "Family-owned hotel", detail: "Smaller properties throughout Taniti City" },
-  { icon: "🛏️", name: "Bed & breakfast", detail: "A growing collection of local stays" },
-  { icon: "🎒", name: "Budget hostel", detail: "Simple, inexpensive lodging" },
+  { icon: "🏨", name: "Four-star resort", detail: "Full-service lodging", cost: "Premium", area: "Yellow Leaf Bay" },
+  { icon: "🏡", name: "Family-owned hotel", detail: "Smaller independently owned properties", cost: "Mid-range", area: "Throughout Taniti" },
+  { icon: "🛏️", name: "Bed & breakfast", detail: "A growing collection of local stays", cost: "Mid-range", area: "Varies by property" },
+  { icon: "🎒", name: "Budget hostel", detail: "Simple, inexpensive lodging", cost: "Budget", area: "Varies by property" },
 ];
+
+type DayPlan = { lodging: string; activity: string; transport: string };
+
+const emptyPlan: DayPlan[] = [
+  { lodging: "", activity: "", transport: "" },
+  { lodging: "", activity: "", transport: "" },
+  { lodging: "", activity: "", transport: "" },
+];
+
+const loadSavedPlan = (): DayPlan[] => {
+  try {
+    const savedPlan = window.localStorage.getItem("taniti-three-day-plan");
+    if (!savedPlan) return emptyPlan;
+    const parsed = JSON.parse(savedPlan);
+    return Array.isArray(parsed) && parsed.length === 3 ? parsed : emptyPlan;
+  } catch {
+    return emptyPlan;
+  }
+};
 
 const faqs = [
   ["What currency can I use?", "The U.S. dollar is Taniti’s currency. Many businesses also accept euros and yen, and major credit cards are widely accepted. Banks offer currency exchange."],
@@ -60,11 +79,7 @@ export default function TanitiPrototype() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cuisine, setCuisine] = useState("All");
   const [search, setSearch] = useState("");
-  const [days, setDays] = useState([
-    { lodging: "", activity: "", transport: "" },
-    { lodging: "", activity: "", transport: "" },
-    { lodging: "", activity: "", transport: "" },
-  ]);
+  const [days, setDays] = useState<DayPlan[]>(loadSavedPlan);
   const [saved, setSaved] = useState(false);
 
   const go = (next: Page) => {
@@ -83,6 +98,11 @@ export default function TanitiPrototype() {
   const updateDay = (index: number, field: "lodging" | "activity" | "transport", value: string) => {
     setDays((current) => current.map((day, dayIndex) => dayIndex === index ? { ...day, [field]: value } : day));
     setSaved(false);
+  };
+
+  const savePlan = () => {
+    window.localStorage.setItem("taniti-three-day-plan", JSON.stringify(days));
+    setSaved(true);
   };
 
   const completedChoices = days.reduce((total, day) => total + Object.values(day).filter(Boolean).length, 0);
@@ -150,7 +170,7 @@ export default function TanitiPrototype() {
         {page === "stay" && (
           <PageSection eyebrow="Stay & eat" title="Comfort for every traveler. Flavor for every appetite." intro="All lodging is regulated and regularly inspected by the Tanitian government.">
             <h2 className="section-heading">Places to stay</h2>
-            <div className="lodging-grid">{lodging.map((item) => <article key={item.name}><AppIcon>{item.icon}</AppIcon><div><h3>{item.name}</h3><p>{item.detail}</p></div></article>)}</div>
+            <div className="lodging-grid">{lodging.map((item) => <article key={item.name}><AppIcon>{item.icon}</AppIcon><div><h3>{item.name}</h3><p>{item.detail}</p><dl className="lodging-meta"><div><dt>Relative cost</dt><dd>{item.cost}</dd></div><div><dt>General area</dt><dd>{item.area}</dd></div></dl></div></article>)}</div>
             <section className="filter-panel" aria-labelledby="restaurant-heading">
               <div><p className="eyebrow">10 restaurants island-wide</p><h2 id="restaurant-heading">Find a restaurant</h2><p>Filter by cuisine or search by name. Taniti has five local, three American, and two Pan-Asian restaurants.</p></div>
               <div className="filter-controls">
@@ -187,7 +207,7 @@ export default function TanitiPrototype() {
               {days.map((day, index) => (
                 <article className="day-card" key={index}>
                   <header><span>0{index + 1}</span><div><small>Your itinerary</small><h2>Day {index + 1}</h2></div></header>
-                  <label><span>Where will you stay?</span><select value={day.lodging} onChange={(event) => updateDay(index, "lodging", event.target.value)}><option value="">Select lodging</option>{lodging.map((item) => <option key={item.name}>{item.name}</option>)}</select></label>
+                  <label><span>Where will you stay?</span><select value={day.lodging} onChange={(event) => updateDay(index, "lodging", event.target.value)}><option value="">Select lodging</option>{lodging.map((item) => <option key={item.name} value={item.name}>{item.name} — {item.cost} — {item.area}</option>)}</select></label>
                   <label><span>What will you do?</span><select value={day.activity} onChange={(event) => updateDay(index, "activity", event.target.value)}><option value="">Select an activity</option>{activities.map((item) => <option key={item.name}>{item.name}</option>)}</select></label>
                   <label><span>How will you get around?</span><select value={day.transport} onChange={(event) => updateDay(index, "transport", event.target.value)}><option value="">Select transportation</option><option>Rental car</option><option>Public bus</option><option>Taxi</option><option>Bike</option><option>Walk</option></select></label>
                 </article>
@@ -197,11 +217,11 @@ export default function TanitiPrototype() {
               <div><p className="eyebrow">Review your trip</p><h2>Your Taniti plan</h2><p>Check your choices, then save or print a copy for your trip.</p></div>
               <div className="review-list">{days.map((day, index) => <article key={index}><b>Day {index + 1}</b><span>{day.lodging || "Lodging not selected"}</span><span>{day.activity || "Activity not selected"}</span><span>{day.transport || "Transportation not selected"}</span></article>)}</div>
               <div className="save-panel">
-                <div><strong>{completedChoices === 9 ? "Your plan is complete!" : "Save your progress anytime"}</strong><p>These controls stay prominent in the review section so they are easy to find.</p></div>
-                <button onClick={() => setSaved(true)} className="button primary">♡ Save plan</button>
+                <div><strong>{completedChoices === 9 ? "Your plan is complete!" : "Save your progress anytime"}</strong><p>Save stores your selections in this browser. Print opens your device’s print dialog. Neither action makes a reservation.</p></div>
+                <button onClick={savePlan} className="button primary">♡ Save plan</button>
                 <button onClick={() => window.print()} className="button secondary">Print plan</button>
               </div>
-              {saved && <p className="success" role="status">✓ Your three-day plan has been saved on this prototype.</p>}
+              {saved && <p className="success" role="status">✓ Saved in this browser. Your selections will be available when you return on this device.</p>}
             </section>
           </PageSection>
         )}
