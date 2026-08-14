@@ -1,3 +1,4 @@
+# Builds and deploys the Vite prototype to GitHub Pages.
 name: Deploy Visit Taniti
 
 on:
